@@ -4,7 +4,6 @@ This code takes in AGG data and output SNC data
 It applies a linear regression on log(number of cycles) and log(stress ratios)
 as described in https://www.astm.org/stp313-eb.html pp. 20-23
 DOI: 10.1520/STP313-EB
-TODO
 """
 
 import os
@@ -17,7 +16,7 @@ from itertools import chain
 from astm import Astm
 
 
-CONFIDENCE = 95  # TODO check with Tassos if this should be a parameter (95, 99)
+CONFIDENCE = 95
 RELIABILITY_LEVEL = 50
 
 SRC_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -35,13 +34,31 @@ OUTPUT_CSV_FILE = os.path.join(DATA_DIR, OUTPUT_CSV_FILENAME)
 def equation_ycar(
     slope: float, intercept: float, log10_stress_parameter: float
 ) -> float:
-    """TODO"""
+    """
+    Calculate ycar
+    https://github.com/EPFL-ENAC/CCFatiguePlatform/blob/feat/fortran2py/dev/CCFatigue_modules/2_S-NCurves/S-N-Curve-LogLog.for#L317
+    Inputs:
+    - slope: float
+    - intercept: float
+    - log10_stress_parameter: float
+    Output:
+    - ycar: float
+    """
     ycar = slope + intercept * log10_stress_parameter
     return ycar
 
 
 def stress_at_failure(aa: float, bb: float, nn: float) -> float:
-    """TODO"""
+    """
+    Calculate stress at failure
+    https://github.com/EPFL-ENAC/CCFatiguePlatform/blob/feat/fortran2py/dev/CCFatigue_modules/2_S-NCurves/S-N-Curve-LogLog.for#L398
+    Inputs:
+    - aa: float
+    - bb: float
+    - nn: float
+    Outputs:
+    - spn: float
+    """
     spn = aa * nn ** (-bb)
     return spn
 
@@ -144,7 +161,8 @@ if __name__ == "__main__":
     stress_ratios_df["slope"] = linregress.apply(lambda x: x[1])
     stress_ratios_df["intercept"] = linregress.apply(lambda x: x[0])
 
-    # Add AA and BB TODO reference for these equations
+    # Add AA and BB
+    # https://github.com/EPFL-ENAC/CCFatiguePlatform/blob/feat/fortran2py/dev/CCFatigue_modules/2_S-NCurves/S-N-Curve-LogLog.for#L368
     stress_ratios_df["stress_parameter_aa"] = 10 ** (
         -stress_ratios_df.slope / stress_ratios_df.intercept
     )
