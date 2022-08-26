@@ -32,6 +32,24 @@ def run_fortran(exec_path: str, input_file: SpooledTemporaryFile[bytes] | IO) ->
         return ouput
 
 
+def run_python(exec_path: str, input_file: SpooledTemporaryFile[bytes] | IO) -> bytes:
+    with NamedTemporaryFile() as tmp_file:
+        input_file.seek(0)
+        tmp_file.write(input_file.read())
+        tmp_file.flush()
+        split_path = os.path.split(exec_path)
+        directory = os.path.abspath(split_path[0])
+        print(f"executing {os.path.abspath(exec_path)} {tmp_file.name}")
+        ouput = subprocess.check_output(
+            [
+                f"./{split_path[1]}",
+                tmp_file.name,
+            ],
+            cwd=directory,
+        )
+        return ouput
+
+
 def create_dataframe(output: bytes, method: SnCurveMethod) -> DataFrame:
     if method in [SnCurveMethod.LIN_LOG, SnCurveMethod.LOG_LOG]:
         widths = [17, 12, 12, 12, 12]
